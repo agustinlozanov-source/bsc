@@ -6,6 +6,7 @@ export default async function UserDashboard() {
   return (
     <RoleHome
       ctx={ctx}
+      role="user"
       intro="Tu desarrollo: objetivos, cursos, credenciales y recomendaciones."
     />
   );

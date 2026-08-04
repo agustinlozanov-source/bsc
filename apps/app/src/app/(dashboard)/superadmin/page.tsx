@@ -6,6 +6,7 @@ export default async function SuperadminDashboard() {
   return (
     <RoleHome
       ctx={ctx}
+      role="superadmin"
       intro="Panel global de la red BSC. Aquí verás el consolidado de todas las sucursales."
     />
   );

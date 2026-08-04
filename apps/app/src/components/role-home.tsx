@@ -5,21 +5,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@bsc/ui";
+import type { UserRole } from "@bsc/validators";
 import type { UserContext } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/roles";
 
 /**
- * Home genérico de dashboard por rol. Placeholder de Fase 2: confirma sesión,
- * rol y tenant. Los widgets reales llegan en las fases de cada perfil.
+ * Home genérico de dashboard por rol. Placeholder: confirma sesión, rol y
+ * tenant. Los widgets reales llegan en las fases de cada perfil.
  */
 export function RoleHome({
   ctx,
+  role,
   intro,
 }: {
   ctx: UserContext;
+  role: UserRole;
   intro: string;
 }) {
-  const role = ctx.primaryRole!;
   const firstName = ctx.profile?.first_name ?? ctx.user.email;
 
   return (

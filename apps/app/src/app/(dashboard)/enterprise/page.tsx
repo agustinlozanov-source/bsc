@@ -6,6 +6,7 @@ export default async function EnterpriseDashboard() {
   return (
     <RoleHome
       ctx={ctx}
+      role="enterprise_admin"
       intro="Portal de tu empresa: equipo, mapa de competencias, objetivos y credenciales."
     />
   );

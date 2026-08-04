@@ -6,6 +6,7 @@ export default async function AdminDashboard() {
   return (
     <RoleHome
       ctx={ctx}
+      role="admin"
       intro="Panel de tu sucursal: KPIs, gestión de profesionales, alumnos, empresas y finanzas."
     />
   );
