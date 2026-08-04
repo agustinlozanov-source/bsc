@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────
+# Netlify — sitio: app.bostonskillingcenter.com (apps/app)
+#
+# Monorepo pnpm + Turborepo. Este archivo configura el deploy del
+# SISTEMA OPERATIVO (apps/app). Cuando agreguemos apps/web y apps/verify,
+# cada uno será un SITIO Netlify aparte (mismo repo), con su propio
+# "base directory" configurado en el panel de Netlify.
+#
+# Variables de entorno (definir en el panel de Netlify, NO aquí):
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY   (solo backend/edge; nunca NEXT_PUBLIC)
+# ─────────────────────────────────────────────────────────────
+
+[build]
+  command = "pnpm --filter @bsc/app build"
+  publish = "apps/app/.next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
