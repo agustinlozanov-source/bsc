@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@bsc/ui";
-import type { NavItem } from "@/lib/navigation";
+import type { UserRole } from "@bsc/validators";
+import { NAV_BY_ROLE } from "@/lib/navigation";
 
 export function Sidebar({
-  items,
+  role,
   roleLabel,
 }: {
-  items: NavItem[];
+  role: UserRole;
   roleLabel: string;
 }) {
   const pathname = usePathname();
+  const items = NAV_BY_ROLE[role];
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex">

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUserContext } from "@/lib/auth";
 import { ROLE_LABEL } from "@/lib/roles";
-import { NAV_BY_ROLE } from "@/lib/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { SignOutButton } from "@/components/sign-out-button";
 
@@ -18,14 +17,13 @@ export default async function DashboardLayout({
   }
 
   const roleLabel = ROLE_LABEL[ctx.primaryRole];
-  const items = NAV_BY_ROLE[ctx.primaryRole];
   const fullName = ctx.profile
     ? `${ctx.profile.first_name} ${ctx.profile.last_name}`.trim()
     : ctx.user.email;
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar items={items} roleLabel={roleLabel} />
+      <Sidebar role={ctx.primaryRole} roleLabel={roleLabel} />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b bg-card px-5">
           <div className="flex items-center gap-2">
