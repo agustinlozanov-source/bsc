@@ -11,3 +11,12 @@ export {
   CardDescription,
   CardContent,
 } from "./card";
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+} from "./dropdown-menu";
