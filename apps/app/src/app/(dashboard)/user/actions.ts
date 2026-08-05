@@ -1,7 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { declareObjectiveSchema } from "@bsc/validators";
+import {
+  declareObjectiveSchema,
+  editObjectiveSchema,
+  type DeclareObjectiveInput,
+  type EditObjectiveInput,
+} from "@bsc/validators";
 import type { Database } from "@bsc/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -59,15 +64,9 @@ export async function enrollInSchedule(
 export type ObjectiveResult = { error?: string; ok?: boolean };
 
 export async function declareObjective(
-  _prev: ObjectiveResult | undefined,
-  formData: FormData,
+  values: DeclareObjectiveInput,
 ): Promise<ObjectiveResult> {
-  const parsed = declareObjectiveSchema.safeParse({
-    enrollmentId: formData.get("enrollmentId"),
-    categoryId: formData.get("categoryId"),
-    objectiveText: formData.get("objectiveText"),
-    targetDate: formData.get("targetDate"),
-  });
+  const parsed = declareObjectiveSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
@@ -82,17 +81,67 @@ export async function declareObjective(
   const payload = {
     user_id: user.id,
     enrollment_id: v.enrollmentId,
-    category_id: v.categoryId,
     objective_text: v.objectiveText,
     target_date: v.targetDate,
     status: "active",
     progress_pct: 0,
   } satisfies Tables["user_objective"]["Insert"];
 
-  const { error } = await supabase
+  const insertRes = await supabase
     .from("user_objective")
-    .insert(payload as never);
-  if (error) return { error: error.message };
+    .insert(payload as never)
+    .select("id")
+    .maybeSingle();
+  if (insertRes.error) return { error: insertRes.error.message };
+  const objectiveId = (insertRes.data as { id: string } | null)?.id;
+  if (!objectiveId) return { error: "No se pudo crear el objetivo." };
+
+  const links = v.categoryIds.map((categoryId) => ({
+    objective_id: objectiveId,
+    category_id: categoryId,
+  }));
+  const { error: linkErr } = await supabase
+    .from("objective_category_link")
+    .insert(links as never);
+  if (linkErr) return { error: linkErr.message };
+
+  revalidatePath("/user/objetivos");
+  return { ok: true };
+}
+
+export async function editObjective(
+  values: EditObjectiveInput,
+): Promise<ObjectiveResult> {
+  const parsed = editObjectiveSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const v = parsed.data;
+
+  const supabase = createSupabaseServerClient();
+
+  const { error: updErr } = await supabase
+    .from("user_objective")
+    .update({
+      objective_text: v.objectiveText,
+      target_date: v.targetDate,
+    } as never)
+    .eq("id", v.objectiveId);
+  if (updErr) return { error: updErr.message };
+
+  // Reemplazar categorías vinculadas.
+  await supabase
+    .from("objective_category_link")
+    .delete()
+    .eq("objective_id", v.objectiveId);
+  const links = v.categoryIds.map((categoryId) => ({
+    objective_id: v.objectiveId,
+    category_id: categoryId,
+  }));
+  const { error: linkErr } = await supabase
+    .from("objective_category_link")
+    .insert(links as never);
+  if (linkErr) return { error: linkErr.message };
 
   revalidatePath("/user/objetivos");
   return { ok: true };

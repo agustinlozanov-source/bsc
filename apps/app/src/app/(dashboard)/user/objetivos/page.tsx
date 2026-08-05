@@ -6,6 +6,7 @@ import { ObjectiveForm } from "@/components/user/objective-form";
 import {
   ObjectivesList,
   type ObjectiveItem,
+  type ObjectiveCategoryRef,
   type ObjectiveUpdate,
 } from "@/components/user/objectives-list";
 
@@ -17,7 +18,6 @@ type ObjectiveRow = {
   progress_pct: number | null;
   created_at: string | null;
   achievement_note: string | null;
-  category_id: string | null;
   enrollment_id: string | null;
 };
 
@@ -37,7 +37,7 @@ export default async function MisObjetivosPage() {
     supabase
       .from("user_objective")
       .select(
-        "id, objective_text, target_date, status, progress_pct, created_at, achievement_note, category_id, enrollment_id",
+        "id, objective_text, target_date, status, progress_pct, created_at, achievement_note, enrollment_id",
       )
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false }),
@@ -47,16 +47,14 @@ export default async function MisObjetivosPage() {
       .eq("user_id", user!.id),
   ]);
 
-  const categories =
-    (catRes.data as { id: string; name: string; icon: string | null }[] | null) ??
-    [];
+  const categories = (catRes.data as ObjectiveCategoryRef[] | null) ?? [];
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const objectives = (objRes.data as ObjectiveRow[] | null) ?? [];
   const enrollments =
     (enrRes.data as { id: string; program_schedule_id: string | null }[] | null) ??
     [];
 
-  // Resolver títulos de curso por inscripción.
+  // Títulos de curso por inscripción.
   const scheduleIds = enrollments
     .map((e) => e.program_schedule_id)
     .filter((x): x is string => Boolean(x));
@@ -98,19 +96,38 @@ export default async function MisObjetivosPage() {
     ),
   );
 
+  const objectiveIds = objectives.map((o) => o.id);
+
+  // Categorías vinculadas por objetivo.
+  const categoriesByObjective = new Map<string, ObjectiveCategoryRef[]>();
   // Historial por objetivo.
   const updatesByObjective = new Map<string, ObjectiveUpdate[]>();
-  const objectiveIds = objectives.map((o) => o.id);
   if (objectiveIds.length > 0) {
-    const updRes = await supabase
-      .from("objective_update")
-      .select("id, objective_id, progress_pct, note, source, created_at")
-      .in("objective_id", objectiveIds)
-      .order("created_at", { ascending: false });
+    const [linkRes, updRes] = await Promise.all([
+      supabase
+        .from("objective_category_link")
+        .select("objective_id, category_id")
+        .in("objective_id", objectiveIds),
+      supabase
+        .from("objective_update")
+        .select("id, objective_id, progress_pct, note, source, created_at")
+        .in("objective_id", objectiveIds)
+        .order("created_at", { ascending: false }),
+    ]);
     (
-      (updRes.data as
-        | (ObjectiveUpdate & { objective_id: string })[]
+      (linkRes.data as
+        | { objective_id: string; category_id: string }[]
         | null) ?? []
+    ).forEach((l) => {
+      const cat = categoryById.get(l.category_id);
+      if (!cat) return;
+      const list = categoriesByObjective.get(l.objective_id) ?? [];
+      list.push(cat);
+      categoriesByObjective.set(l.objective_id, list);
+    });
+    (
+      (updRes.data as (ObjectiveUpdate & { objective_id: string })[] | null) ??
+      []
     ).forEach((u) => {
       const list = updatesByObjective.get(u.objective_id) ?? [];
       list.push(u);
@@ -118,31 +135,26 @@ export default async function MisObjetivosPage() {
     });
   }
 
-  const items: ObjectiveItem[] = objectives.map((o) => {
-    const cat = o.category_id ? categoryById.get(o.category_id) : undefined;
-    return {
-      id: o.id,
-      objective_text: o.objective_text,
-      target_date: o.target_date,
-      status: o.status,
-      progress_pct: o.progress_pct,
-      created_at: o.created_at,
-      achievement_note: o.achievement_note,
-      categoryName: cat?.name ?? null,
-      categoryIcon: cat?.icon ?? null,
-      courseTitle: o.enrollment_id
-        ? (titleByEnrollment.get(o.enrollment_id) ?? null)
-        : null,
-      updates: updatesByObjective.get(o.id) ?? [],
-    };
-  });
+  const items: ObjectiveItem[] = objectives.map((o) => ({
+    id: o.id,
+    objective_text: o.objective_text,
+    target_date: o.target_date,
+    status: o.status,
+    progress_pct: o.progress_pct,
+    created_at: o.created_at,
+    achievement_note: o.achievement_note,
+    categories: categoriesByObjective.get(o.id) ?? [],
+    courseTitle: o.enrollment_id
+      ? (titleByEnrollment.get(o.enrollment_id) ?? null)
+      : null,
+    updates: updatesByObjective.get(o.id) ?? [],
+  }));
 
   const enrollmentOptions = enrollments.map((e) => ({
     id: e.id,
     label: titleByEnrollment.get(e.id) ?? "Curso",
   }));
 
-  // Contadores del dashboard.
   const counts = { total: items.length, ontrack: 0, risk: 0, achieved: 0 };
   for (const o of items) {
     const st = objectiveStatus(o);
@@ -192,7 +204,7 @@ export default async function MisObjetivosPage() {
         </div>
       ) : null}
 
-      <ObjectivesList objectives={items} />
+      <ObjectivesList objectives={items} allCategories={categories} />
     </div>
   );
 }

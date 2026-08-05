@@ -17,6 +17,7 @@
     "@bsc/utils": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
+    "@radix-ui/react-popover": "^1.1.2",
     "class-variance-authority": "^0.7.0",
     "cmdk": "^1.0.0",
     "lucide-react": "^0.446.0",
