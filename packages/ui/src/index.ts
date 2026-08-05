@@ -32,3 +32,5 @@ export {
   CommandGroup,
   CommandItem,
 } from "./command";
+export { DataTable, type Column } from "./data-table";
+export { QuickView } from "./quick-view";
