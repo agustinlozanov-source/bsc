@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Rutas públicas que no requieren sesión. */
-const PUBLIC_PATHS = ["/login", "/registro", "/recuperar", "/auth"];
+const PUBLIC_PATHS = ["/login", "/registro", "/recuperar", "/auth", "/verify"];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some(

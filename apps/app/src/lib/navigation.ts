@@ -53,7 +53,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: "Mis cursos", icon: BookOpen, href: "/user/cursos" },
     { label: "Catálogo", icon: Compass, href: "/user/catalogo" },
     { label: "Evaluaciones", icon: BarChart3 },
-    { label: "Credenciales", icon: Award },
+    { label: "Credenciales", icon: Award, href: "/user/credenciales" },
     { label: "Calendario", icon: Calendar },
     { label: "Mensajes", icon: Mail },
     { label: "Configuración", icon: Settings },

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@bsc/ui";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ENROLLMENT_STATUS_LABEL } from "@/lib/labels";
+import { CompleteButton } from "@/components/professional/complete-button";
 
 type EnrollmentRow = {
   id: string;
@@ -125,9 +126,14 @@ export default async function MisAlumnosPage() {
                       "Curso"}
                   </p>
                 </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                  {ENROLLMENT_STATUS_LABEL[e.status ?? ""] ?? e.status ?? "—"}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {ENROLLMENT_STATUS_LABEL[e.status ?? ""] ?? e.status ?? "—"}
+                  </span>
+                  {e.status === "completed" ? null : (
+                    <CompleteButton enrollmentId={e.id} />
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -2220,6 +2220,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_and_issue: { Args: { p_enrollment_id: string }; Returns: string }
       current_professional_id: { Args: never; Returns: string }
       has_tenant_access: { Args: { p_tenant_id: string }; Returns: boolean }
       is_admin_of: { Args: { p_tenant_id: string }; Returns: boolean }
@@ -2230,6 +2231,7 @@ export type Database = {
       is_superadmin: { Args: never; Returns: boolean }
       is_tenant_admin: { Args: { p_tenant_id: string }; Returns: boolean }
       shares_tenant_with: { Args: { p_user_id: string }; Returns: boolean }
+      verify_credential: { Args: { p_credential_id: string }; Returns: Json }
     }
     Enums: {
       format_type:
