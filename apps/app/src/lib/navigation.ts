@@ -37,7 +37,7 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   professional: [
     { label: "Dashboard", icon: LayoutDashboard, href: ROLE_DASHBOARD.professional },
     { label: "Mi perfil profesional", icon: User, href: "/professional/perfil" },
-    { label: "Portal académico", icon: BookOpen },
+    { label: "Portal académico", icon: BookOpen, href: "/professional/academico" },
     { label: "Finanzas", icon: Wallet },
     { label: "Mis alumnos", icon: Users },
     { label: "Calendario", icon: Calendar },

@@ -81,4 +81,80 @@ export type ProfessionalProfileInput = z.infer<
   typeof professionalProfileSchema
 >;
 
+// ── Programa / curso ────────────────────────────────────────────────────────
+
+export const formatTypeSchema = z.enum([
+  "conference",
+  "workshop",
+  "course",
+  "diploma",
+  "coaching",
+  "consultancy",
+]);
+export type FormatType = z.infer<typeof formatTypeSchema>;
+
+export const modalityTypeSchema = z.enum(["presencial", "online", "hybrid"]);
+export type ModalityType = z.infer<typeof modalityTypeSchema>;
+
+export const skillLevelSchema = z.enum([
+  "basic",
+  "intermediate",
+  "advanced",
+  "expert",
+]);
+export type SkillLevel = z.infer<typeof skillLevelSchema>;
+
+export const programTierSchema = z.enum(["tier1", "tier2"]);
+export type ProgramTier = z.infer<typeof programTierSchema>;
+
+export const syllabusModuleSchema = z.object({
+  module: z.string().min(1, "Requerido"),
+  topics: z.string().optional().or(z.literal("")),
+  hours: z
+    .string()
+    .regex(/^\d*\.?\d*$/, "Número inválido")
+    .optional()
+    .or(z.literal("")),
+});
+export type SyllabusModule = z.infer<typeof syllabusModuleSchema>;
+
+export const programSkillInputSchema = z.object({
+  skillId: z.string().uuid(),
+  targetLevel: skillLevelSchema,
+});
+export type ProgramSkillInput = z.infer<typeof programSkillInputSchema>;
+
+const optionalNumericText = z
+  .string()
+  .regex(/^\d*\.?\d*$/, "Número inválido")
+  .optional()
+  .or(z.literal(""));
+
+export const createProgramSchema = z.object({
+  title: z.string().min(3, "Mínimo 3 caracteres"),
+  description: z.string().optional().or(z.literal("")),
+  format: formatTypeSchema,
+  modality: modalityTypeSchema,
+  durationHours: optionalNumericText,
+  numSessions: optionalNumericText,
+  entryProfile: z.string().optional().or(z.literal("")),
+  exitProfile: z.string().optional().or(z.literal("")),
+  maxParticipants: optionalNumericText,
+  priceMxn: optionalNumericText,
+  tier: programTierSchema,
+  isRecordable: z.boolean().default(false),
+  syllabus: z.array(syllabusModuleSchema).default([]),
+  skills: z.array(programSkillInputSchema).default([]),
+});
+export type CreateProgramInput = z.infer<typeof createProgramSchema>;
+
+/** Splits profesional/centro según el tier (regla de negocio BSC). */
+export const TIER_SPLITS: Record<
+  ProgramTier,
+  { professional: number; center: number }
+> = {
+  tier1: { professional: 0.8, center: 0.2 },
+  tier2: { professional: 0.65, center: 0.35 },
+};
+
 export { z };
