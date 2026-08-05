@@ -195,11 +195,23 @@ export type CreateEnterpriseInput = z.infer<typeof createEnterpriseSchema>;
 
 export const declareObjectiveSchema = z.object({
   enrollmentId: z.string().uuid("Selecciona un curso"),
-  categoryId: z.string().uuid("Elige una categoría"),
+  categoryIds: z
+    .array(z.string().uuid())
+    .min(1, "Elige al menos una categoría"),
   objectiveText: z.string().min(5, "Describe tu objetivo"),
   targetDate: z.string().min(1, "Elige una fecha"),
 });
 export type DeclareObjectiveInput = z.infer<typeof declareObjectiveSchema>;
+
+export const editObjectiveSchema = z.object({
+  objectiveId: z.string().uuid(),
+  categoryIds: z
+    .array(z.string().uuid())
+    .min(1, "Elige al menos una categoría"),
+  objectiveText: z.string().min(5, "Describe tu objetivo"),
+  targetDate: z.string().min(1, "Elige una fecha"),
+});
+export type EditObjectiveInput = z.infer<typeof editObjectiveSchema>;
 
 /** Splits profesional/centro según el tier (regla de negocio BSC). */
 export const TIER_SPLITS: Record<

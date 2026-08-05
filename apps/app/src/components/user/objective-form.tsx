@@ -1,24 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
-import { cn } from "@bsc/utils";
-import { Button, Input, Label, Textarea } from "@bsc/ui";
+import { useTransition } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { BookOpen } from "lucide-react";
 import {
-  declareObjective,
-  type ObjectiveResult,
-} from "@/app/(dashboard)/user/actions";
+  declareObjectiveSchema,
+  type DeclareObjectiveInput,
+} from "@bsc/validators";
+import {
+  Button,
+  Combobox,
+  MultiCombobox,
+  Input,
+  Label,
+  Textarea,
+  type ComboOption,
+} from "@bsc/ui";
+import { iconByName } from "@/lib/lucide-icon";
+import { declareObjective } from "@/app/(dashboard)/user/actions";
 
-const selectClass =
-  "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
-
-function Submit() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Guardando…" : "Declarar objetivo →"}
-    </Button>
-  );
+function Req() {
+  return <span className="text-destructive"> *</span>;
+}
+function ErrorText({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="mt-1 text-xs text-destructive">{message}</p>;
 }
 
 export function ObjectiveForm({
@@ -28,11 +36,23 @@ export function ObjectiveForm({
   enrollments: { id: string; label: string }[];
   categories: { id: string; name: string; icon: string | null }[];
 }) {
-  const [state, formAction] = useFormState<ObjectiveResult | undefined, FormData>(
-    declareObjective,
-    undefined,
-  );
-  const [categoryId, setCategoryId] = useState<string>("");
+  const [isPending, startTransition] = useTransition();
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<DeclareObjectiveInput>({
+    resolver: zodResolver(declareObjectiveSchema),
+    defaultValues: {
+      enrollmentId: "",
+      categoryIds: [],
+      objectiveText: "",
+      targetDate: "",
+    },
+  });
 
   if (enrollments.length === 0) {
     return (
@@ -42,72 +62,103 @@ export function ObjectiveForm({
     );
   }
 
+  const courseOptions: ComboOption[] = enrollments.map((e) => ({
+    value: e.id,
+    label: e.label,
+    icon: <BookOpen className="size-4 text-muted-foreground" />,
+  }));
+
+  const categoryOptions: ComboOption[] = categories.map((c) => {
+    const Icon = iconByName(c.icon);
+    return {
+      value: c.id,
+      label: c.name,
+      icon: <Icon className="size-4 text-muted-foreground" />,
+    };
+  });
+
+  const onSubmit = handleSubmit((values) => {
+    startTransition(async () => {
+      const res = await declareObjective(values);
+      if (res.error) toast.error(res.error);
+      else {
+        toast.success("Objetivo declarado.");
+        reset();
+      }
+    });
+  });
+
   return (
-    <form action={formAction} className="space-y-4">
-      <input type="hidden" name="categoryId" value={categoryId} />
+    <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="enrollmentId">
-          Curso vinculado <span className="text-destructive">*</span>
+        <Label>
+          Curso vinculado <Req />
         </Label>
-        <select id="enrollmentId" name="enrollmentId" className={selectClass}>
-          {enrollments.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.label}
-            </option>
-          ))}
-        </select>
+        <Controller
+          control={control}
+          name="enrollmentId"
+          render={({ field }) => (
+            <Combobox
+              options={courseOptions}
+              value={field.value}
+              onChange={field.onChange}
+              placeholder="Busca y elige un curso…"
+              searchPlaceholder="Buscar curso…"
+            />
+          )}
+        />
+        <ErrorText message={errors.enrollmentId?.message} />
       </div>
 
       <div>
         <Label>
-          Categoría <span className="text-destructive">*</span>
+          Categorías <Req />
         </Label>
-        <div className="mt-1 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategoryId(c.id)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-sm transition-colors",
-                categoryId === c.id
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "hover:bg-muted",
-              )}
-            >
-              {c.icon ? `${c.icon} ` : ""}
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <Controller
+          control={control}
+          name="categoryIds"
+          render={({ field }) => (
+            <MultiCombobox
+              options={categoryOptions}
+              values={field.value}
+              onChange={field.onChange}
+              placeholder="Elige una o más…"
+              searchPlaceholder="Buscar categoría…"
+            />
+          )}
+        />
+        <ErrorText message={errors.categoryIds?.message} />
       </div>
 
       <div>
         <Label htmlFor="objectiveText">
-          ¿Qué quieres lograr? <span className="text-destructive">*</span>
+          ¿Qué quieres lograr? <Req />
         </Label>
         <Textarea
           id="objectiveText"
-          name="objectiveText"
           rows={3}
           placeholder="Ejemplo: Implementar un sistema de IA en mi consultora para atender 3x más clientes sin aumentar el equipo."
+          {...register("objectiveText")}
         />
+        <ErrorText message={errors.objectiveText?.message} />
       </div>
 
       <div>
         <Label htmlFor="targetDate">
-          ¿Para cuándo? <span className="text-destructive">*</span>
+          ¿Para cuándo? <Req />
         </Label>
-        <Input id="targetDate" name="targetDate" type="date" className="max-w-xs" />
+        <Input
+          id="targetDate"
+          type="date"
+          className="max-w-xs"
+          {...register("targetDate")}
+        />
+        <ErrorText message={errors.targetDate?.message} />
       </div>
 
-      {state?.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
-      ) : null}
-      {state?.ok ? (
-        <p className="text-sm text-brand">Objetivo declarado.</p>
-      ) : null}
-      <Submit />
+      <Button type="submit" disabled={isPending}>
+        {isPending ? "Guardando…" : "Declarar objetivo →"}
+      </Button>
     </form>
   );
 }

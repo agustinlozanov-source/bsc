@@ -1,0 +1,75 @@
+import {
+  Tag,
+  Building2,
+  TrendingUp,
+  Target,
+  DollarSign,
+  Route,
+  Rocket,
+  Briefcase,
+  Award,
+  Cpu,
+  MessageCircle,
+  Users,
+  Brain,
+  Zap,
+  Languages,
+  BarChart3,
+  ClipboardList,
+  LineChart,
+  TrendingDown,
+  MonitorSmartphone,
+  Lightbulb,
+  Globe,
+  Wallet,
+  PiggyBank,
+  Coins,
+  Scale,
+  HeartPulse,
+  Network,
+  GraduationCap,
+  BadgeCheck,
+  type LucideIcon,
+} from "lucide-react";
+
+/**
+ * Mapa curado de íconos disponibles para categorías (Lucide). El selector de
+ * íconos en Superadmin usará este mismo catálogo. Fallback: Tag.
+ */
+export const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  Tag,
+  Building2,
+  TrendingUp,
+  Target,
+  DollarSign,
+  Route,
+  Rocket,
+  Briefcase,
+  Award,
+  Cpu,
+  MessageCircle,
+  Users,
+  Brain,
+  Zap,
+  Languages,
+  BarChart3,
+  ClipboardList,
+  LineChart,
+  TrendingDown,
+  MonitorSmartphone,
+  Lightbulb,
+  Globe,
+  Wallet,
+  PiggyBank,
+  Coins,
+  Scale,
+  HeartPulse,
+  Network,
+  GraduationCap,
+  BadgeCheck,
+};
+
+export function iconByName(name?: string | null): LucideIcon {
+  if (!name) return Tag;
+  return CATEGORY_ICONS[name] ?? Tag;
+}

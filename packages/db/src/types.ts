@@ -1386,6 +1386,42 @@ export type Database = {
         }
         Relationships: []
       }
+      objective_category_link: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          id: string
+          objective_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          objective_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          objective_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_category_link_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "objective_category"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objective_category_link_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "user_objective"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objective_update: {
         Row: {
           created_at: string | null
