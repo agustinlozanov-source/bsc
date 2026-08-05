@@ -57,7 +57,7 @@ export function TopBar({
       {/* Centro: buscador */}
       <button
         type="button"
-        onClick={() => toast.info("Búsqueda global (⌘K) — próximamente")}
+        onClick={() => window.dispatchEvent(new CustomEvent("bsc:open-search"))}
         className="hidden max-w-md flex-1 items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted sm:flex"
       >
         <Search className="size-4" />

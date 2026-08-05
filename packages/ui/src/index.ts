@@ -20,3 +20,12 @@ export {
   DropdownMenuSeparator,
   DropdownMenuGroup,
 } from "./dropdown-menu";
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "./command";

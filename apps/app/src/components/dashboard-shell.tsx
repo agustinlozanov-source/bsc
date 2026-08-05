@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ROLE_DASHBOARD, ROLE_LABEL } from "@/lib/roles";
 import { Sidebar } from "@/components/sidebar";
 import { TopBar, type OtherRole } from "@/components/top-bar";
+import { GlobalSearch } from "@/components/global-search";
 
 const PROFILE_HREF: Partial<Record<UserRole, string>> = {
   professional: "/professional/perfil",
@@ -50,6 +51,7 @@ export async function DashboardShell({
 
   return (
     <div className="flex min-h-screen flex-col">
+      <GlobalSearch primaryRole={role} />
       <TopBar
         fullName={fullName}
         roleLabel={roleLabel}
