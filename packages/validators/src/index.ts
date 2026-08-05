@@ -148,6 +148,14 @@ export const createProgramSchema = z.object({
 });
 export type CreateProgramInput = z.infer<typeof createProgramSchema>;
 
+export const createScheduleSchema = z.object({
+  startDate: z.string().min(1, "Requerido"),
+  endDate: z.string().optional().or(z.literal("")),
+  location: z.string().optional().or(z.literal("")),
+  maxParticipants: optionalNumericText,
+});
+export type CreateScheduleInput = z.infer<typeof createScheduleSchema>;
+
 /** Splits profesional/centro según el tier (regla de negocio BSC). */
 export const TIER_SPLITS: Record<
   ProgramTier,

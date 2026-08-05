@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
   createProgramSchema,
+  createScheduleSchema,
   TIER_SPLITS,
   type CreateProgramInput,
 } from "@bsc/validators";
@@ -91,4 +92,71 @@ export async function createProgram(
 
   revalidatePath("/professional/academico");
   return { programId };
+}
+
+export async function publishProgram(formData: FormData): Promise<void> {
+  const programId = String(formData.get("programId") ?? "");
+  const publish = String(formData.get("publish") ?? "") === "1";
+  if (!programId) return;
+
+  const supabase = createSupabaseServerClient();
+  await supabase
+    .from("program")
+    .update({ is_published: publish } as never)
+    .eq("id", programId);
+
+  revalidatePath(`/professional/academico/${programId}`);
+  revalidatePath("/professional/academico");
+}
+
+export type ScheduleResult = { error?: string; ok?: boolean };
+
+export async function scheduleProgram(
+  _prev: ScheduleResult | undefined,
+  formData: FormData,
+): Promise<ScheduleResult> {
+  const programId = String(formData.get("programId") ?? "");
+  if (!programId) return { error: "Falta el curso" };
+
+  const parsed = createScheduleSchema.safeParse({
+    startDate: formData.get("startDate"),
+    endDate: formData.get("endDate"),
+    location: formData.get("location"),
+    maxParticipants: formData.get("maxParticipants"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const v = parsed.data;
+
+  const start = new Date(v.startDate);
+  if (Number.isNaN(start.getTime())) return { error: "Fecha inválida" };
+  const end = v.endDate ? new Date(v.endDate) : null;
+
+  const supabase = createSupabaseServerClient();
+  const progRes = await supabase
+    .from("program")
+    .select("tenant_id")
+    .eq("id", programId)
+    .maybeSingle();
+  const tenantId = (progRes.data as { tenant_id: string | null } | null)
+    ?.tenant_id;
+
+  const payload = {
+    program_id: programId,
+    tenant_id: tenantId ?? null,
+    start_date: start.toISOString(),
+    end_date: end && !Number.isNaN(end.getTime()) ? end.toISOString() : null,
+    location: v.location || null,
+    status: "scheduled",
+    max_participants: v.maxParticipants ? Number(v.maxParticipants) : null,
+  } satisfies Tables["program_schedule"]["Insert"];
+
+  const { error } = await supabase
+    .from("program_schedule")
+    .insert(payload as never);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/professional/academico/${programId}`);
+  return { ok: true };
 }

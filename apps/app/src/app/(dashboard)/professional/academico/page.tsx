@@ -82,7 +82,8 @@ export default async function PortalAcademicoPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {programs.map((p) => (
-            <Card key={p.id}>
+            <Link key={p.id} href={`/professional/academico/${p.id}`}>
+              <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base">{p.title}</CardTitle>
@@ -105,7 +106,8 @@ export default async function PortalAcademicoPage() {
                   {p.price_mxn != null ? formatMXN(Number(p.price_mxn)) : "—"}
                 </p>
               </CardContent>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
