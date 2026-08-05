@@ -17,6 +17,7 @@ import {
   PlusCircle,
   Map,
   Brain,
+  Compass,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@bsc/validators";
@@ -48,8 +49,9 @@ export const NAV_BY_ROLE: Record<UserRole, NavItem[]> = {
   user: [
     { label: "Dashboard", icon: LayoutDashboard, href: ROLE_DASHBOARD.user },
     { label: "Mi perfil de desarrollo", icon: User },
-    { label: "Mis objetivos", icon: Target },
-    { label: "Mis cursos", icon: BookOpen },
+    { label: "Mis objetivos", icon: Target, href: "/user/objetivos" },
+    { label: "Mis cursos", icon: BookOpen, href: "/user/cursos" },
+    { label: "Catálogo", icon: Compass, href: "/user/catalogo" },
     { label: "Evaluaciones", icon: BarChart3 },
     { label: "Credenciales", icon: Award },
     { label: "Calendario", icon: Calendar },

@@ -156,6 +156,13 @@ export const createScheduleSchema = z.object({
 });
 export type CreateScheduleInput = z.infer<typeof createScheduleSchema>;
 
+export const declareObjectiveSchema = z.object({
+  enrollmentId: z.string().uuid("Selecciona un curso"),
+  objectiveText: z.string().min(5, "Describe tu objetivo"),
+  targetDate: z.string().min(1, "Elige una fecha"),
+});
+export type DeclareObjectiveInput = z.infer<typeof declareObjectiveSchema>;
+
 /** Splits profesional/centro según el tier (regla de negocio BSC). */
 export const TIER_SPLITS: Record<
   ProgramTier,
