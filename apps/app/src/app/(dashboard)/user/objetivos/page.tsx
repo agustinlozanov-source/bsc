@@ -1,22 +1,25 @@
-import { Target } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@bsc/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@bsc/ui";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { OBJECTIVE_STATUS_LABEL } from "@/lib/labels";
+import { objectiveStatus } from "@/lib/objectives";
 import { ObjectiveForm } from "@/components/user/objective-form";
+import {
+  ObjectivesList,
+  type ObjectiveItem,
+  type ObjectiveUpdate,
+} from "@/components/user/objectives-list";
 
 type ObjectiveRow = {
   id: string;
   objective_text: string;
   target_date: string;
   status: string | null;
+  progress_pct: number | null;
+  created_at: string | null;
+  achievement_note: string | null;
+  category_id: string | null;
+  enrollment_id: string | null;
 };
-type EnrollmentRow = { id: string; program_schedule_id: string | null };
 
 export default async function MisObjetivosPage() {
   await requireRole("user");
@@ -25,20 +28,35 @@ export default async function MisObjetivosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const objRes = await supabase
-    .from("user_objective")
-    .select("id, objective_text, target_date, status")
-    .eq("user_id", user!.id)
-    .order("created_at", { ascending: false });
+  const [catRes, objRes, enrRes] = await Promise.all([
+    supabase
+      .from("objective_category")
+      .select("id, name, icon")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("user_objective")
+      .select(
+        "id, objective_text, target_date, status, progress_pct, created_at, achievement_note, category_id, enrollment_id",
+      )
+      .eq("user_id", user!.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("enrollment")
+      .select("id, program_schedule_id")
+      .eq("user_id", user!.id),
+  ]);
+
+  const categories =
+    (catRes.data as { id: string; name: string; icon: string | null }[] | null) ??
+    [];
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
   const objectives = (objRes.data as ObjectiveRow[] | null) ?? [];
+  const enrollments =
+    (enrRes.data as { id: string; program_schedule_id: string | null }[] | null) ??
+    [];
 
-  // Inscripciones para el selector del formulario.
-  const enrRes = await supabase
-    .from("enrollment")
-    .select("id, program_schedule_id")
-    .eq("user_id", user!.id);
-  const enrollments = (enrRes.data as EnrollmentRow[] | null) ?? [];
-
+  // Resolver títulos de curso por inscripción.
   const scheduleIds = enrollments
     .map((e) => e.program_schedule_id)
     .filter((x): x is string => Boolean(x));
@@ -71,13 +89,67 @@ export default async function MisObjetivosPage() {
       ),
     );
   }
+  const titleByEnrollment = new Map<string, string>();
+  enrollments.forEach((e) =>
+    titleByEnrollment.set(
+      e.id,
+      (e.program_schedule_id && titleBySchedule.get(e.program_schedule_id)) ||
+        "Curso",
+    ),
+  );
+
+  // Historial por objetivo.
+  const updatesByObjective = new Map<string, ObjectiveUpdate[]>();
+  const objectiveIds = objectives.map((o) => o.id);
+  if (objectiveIds.length > 0) {
+    const updRes = await supabase
+      .from("objective_update")
+      .select("id, objective_id, progress_pct, note, source, created_at")
+      .in("objective_id", objectiveIds)
+      .order("created_at", { ascending: false });
+    (
+      (updRes.data as
+        | (ObjectiveUpdate & { objective_id: string })[]
+        | null) ?? []
+    ).forEach((u) => {
+      const list = updatesByObjective.get(u.objective_id) ?? [];
+      list.push(u);
+      updatesByObjective.set(u.objective_id, list);
+    });
+  }
+
+  const items: ObjectiveItem[] = objectives.map((o) => {
+    const cat = o.category_id ? categoryById.get(o.category_id) : undefined;
+    return {
+      id: o.id,
+      objective_text: o.objective_text,
+      target_date: o.target_date,
+      status: o.status,
+      progress_pct: o.progress_pct,
+      created_at: o.created_at,
+      achievement_note: o.achievement_note,
+      categoryName: cat?.name ?? null,
+      categoryIcon: cat?.icon ?? null,
+      courseTitle: o.enrollment_id
+        ? (titleByEnrollment.get(o.enrollment_id) ?? null)
+        : null,
+      updates: updatesByObjective.get(o.id) ?? [],
+    };
+  });
 
   const enrollmentOptions = enrollments.map((e) => ({
     id: e.id,
-    label:
-      (e.program_schedule_id && titleBySchedule.get(e.program_schedule_id)) ||
-      "Curso",
+    label: titleByEnrollment.get(e.id) ?? "Curso",
   }));
+
+  // Contadores del dashboard.
+  const counts = { total: items.length, ontrack: 0, risk: 0, achieved: 0 };
+  for (const o of items) {
+    const st = objectiveStatus(o);
+    if (st.key === "achieved") counts.achieved++;
+    else if (st.color === "green") counts.ontrack++;
+    else counts.risk++;
+  }
 
   return (
     <div className="space-y-6">
@@ -88,9 +160,6 @@ export default async function MisObjetivosPage() {
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
           Objetivos de desarrollo
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          Declara qué quieres lograr; el centro te dará seguimiento.
-        </p>
       </div>
 
       <Card>
@@ -98,41 +167,32 @@ export default async function MisObjetivosPage() {
           <CardTitle className="text-base">Declarar objetivo</CardTitle>
         </CardHeader>
         <CardContent>
-          <ObjectiveForm enrollments={enrollmentOptions} />
+          <ObjectiveForm
+            enrollments={enrollmentOptions}
+            categories={categories}
+          />
         </CardContent>
       </Card>
 
-      {objectives.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            <Target className="size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Aún no has declarado objetivos.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {objectives.map((o) => (
-            <Card key={o.id}>
-              <CardContent className="flex items-start justify-between gap-4 py-4">
-                <div>
-                  <p className="font-medium">{o.objective_text}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Meta:{" "}
-                    {new Date(o.target_date).toLocaleDateString("es-MX", {
-                      dateStyle: "medium",
-                    })}
-                  </p>
-                </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                  {OBJECTIVE_STATUS_LABEL[o.status ?? ""] ?? o.status ?? "—"}
-                </span>
+      {items.length > 0 ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            ["Total", counts.total],
+            ["En tiempo", counts.ontrack],
+            ["En riesgo", counts.risk],
+            ["Logrados", counts.achieved],
+          ].map(([label, value]) => (
+            <Card key={label as string}>
+              <CardContent className="py-4">
+                <p className="text-2xl font-bold">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
               </CardContent>
             </Card>
           ))}
         </div>
-      )}
+      ) : null}
+
+      <ObjectivesList objectives={items} />
     </div>
   );
 }

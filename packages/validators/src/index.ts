@@ -195,6 +195,7 @@ export type CreateEnterpriseInput = z.infer<typeof createEnterpriseSchema>;
 
 export const declareObjectiveSchema = z.object({
   enrollmentId: z.string().uuid("Selecciona un curso"),
+  categoryId: z.string().uuid("Elige una categoría"),
   objectiveText: z.string().min(5, "Describe tu objetivo"),
   targetDate: z.string().min(1, "Elige una fecha"),
 });
