@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createEnterpriseSchema } from "@bsc/validators";
+import {
+  createEnterpriseSchema,
+  type CreateEnterpriseInput,
+} from "@bsc/validators";
 import type { Database } from "@bsc/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -10,18 +13,9 @@ type Tables = Database["public"]["Tables"];
 export type EnterpriseResult = { error?: string; ok?: boolean };
 
 export async function createEnterprise(
-  _prev: EnterpriseResult | undefined,
-  formData: FormData,
+  values: CreateEnterpriseInput,
 ): Promise<EnterpriseResult> {
-  const parsed = createEnterpriseSchema.safeParse({
-    name: formData.get("name"),
-    rfc: formData.get("rfc"),
-    sector: formData.get("sector"),
-    size: formData.get("size"),
-    hrContactName: formData.get("hrContactName"),
-    hrContactEmail: formData.get("hrContactEmail"),
-    membershipTier: formData.get("membershipTier"),
-  });
+  const parsed = createEnterpriseSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
@@ -54,6 +48,7 @@ export async function createEnterprise(
     size: v.size,
     hr_contact_name: v.hrContactName || null,
     hr_contact_email: v.hrContactEmail || null,
+    hr_contact_phone: v.hrContactPhone || null,
     membership_tier: v.membershipTier,
     is_active: true,
   } satisfies Tables["enterprise"]["Insert"];

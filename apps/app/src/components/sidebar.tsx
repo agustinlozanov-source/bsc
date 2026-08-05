@@ -18,9 +18,10 @@ export function Sidebar({
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex">
-      <div className="flex h-14 items-center gap-2 border-b px-5">
-        <span className="text-lg font-bold text-brand">BSC</span>
-        <span className="text-xs text-muted-foreground">{roleLabel}</span>
+      <div className="flex h-12 items-center border-b px-5">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {roleLabel}
+        </span>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         {items.map((item) => {

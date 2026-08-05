@@ -64,6 +64,7 @@ export async function declareObjective(
 ): Promise<ObjectiveResult> {
   const parsed = declareObjectiveSchema.safeParse({
     enrollmentId: formData.get("enrollmentId"),
+    categoryId: formData.get("categoryId"),
     objectiveText: formData.get("objectiveText"),
     targetDate: formData.get("targetDate"),
   });
@@ -81,15 +82,86 @@ export async function declareObjective(
   const payload = {
     user_id: user.id,
     enrollment_id: v.enrollmentId,
+    category_id: v.categoryId,
     objective_text: v.objectiveText,
     target_date: v.targetDate,
     status: "active",
+    progress_pct: 0,
   } satisfies Tables["user_objective"]["Insert"];
 
   const { error } = await supabase
     .from("user_objective")
     .insert(payload as never);
   if (error) return { error: error.message };
+
+  revalidatePath("/user/objetivos");
+  return { ok: true };
+}
+
+export type ProgressResult = { error?: string; ok?: boolean };
+
+export async function updateObjectiveProgress(
+  _prev: ProgressResult | undefined,
+  formData: FormData,
+): Promise<ProgressResult> {
+  const objectiveId = String(formData.get("objectiveId") ?? "");
+  const progress = Number(formData.get("progress") ?? "0");
+  const note = String(formData.get("note") ?? "");
+  if (!objectiveId) return { error: "Falta el objetivo" };
+  const pct = Math.max(0, Math.min(100, Number.isFinite(progress) ? progress : 0));
+
+  const supabase = createSupabaseServerClient();
+
+  const { error: updErr } = await supabase
+    .from("user_objective")
+    .update({
+      progress_pct: pct,
+      status: pct >= 100 ? "achieved" : "in_progress",
+      ...(pct >= 100 ? { achieved_at: new Date().toISOString() } : {}),
+    } as never)
+    .eq("id", objectiveId);
+  if (updErr) return { error: updErr.message };
+
+  const { error: insErr } = await supabase.from("objective_update").insert({
+    objective_id: objectiveId,
+    progress_pct: pct,
+    note: note || null,
+    source: "student",
+  } as never);
+  if (insErr) return { error: insErr.message };
+
+  revalidatePath("/user/objetivos");
+  return { ok: true };
+}
+
+export type AchieveResult = { error?: string; ok?: boolean };
+
+export async function markObjectiveAchieved(
+  _prev: AchieveResult | undefined,
+  formData: FormData,
+): Promise<AchieveResult> {
+  const objectiveId = String(formData.get("objectiveId") ?? "");
+  const note = String(formData.get("note") ?? "");
+  if (!objectiveId) return { error: "Falta el objetivo" };
+
+  const supabase = createSupabaseServerClient();
+  const { error } = await supabase
+    .from("user_objective")
+    .update({
+      status: "achieved",
+      progress_pct: 100,
+      achieved_at: new Date().toISOString(),
+      achievement_note: note || null,
+    } as never)
+    .eq("id", objectiveId);
+  if (error) return { error: error.message };
+
+  await supabase.from("objective_update").insert({
+    objective_id: objectiveId,
+    progress_pct: 100,
+    note: note || "Objetivo logrado 🎉",
+    source: "student",
+  } as never);
 
   revalidatePath("/user/objetivos");
   return { ok: true };

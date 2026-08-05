@@ -1,21 +1,11 @@
-import { Building2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@bsc/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@bsc/ui";
 import { requireRole } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { EnterpriseForm } from "@/components/admin/enterprise-form";
-
-type EnterpriseRow = {
-  id: string;
-  name: string;
-  sector: string | null;
-  membership_tier: string | null;
-  is_active: boolean | null;
-};
+import {
+  EnterprisesTable,
+  type EnterpriseRow,
+} from "@/components/admin/enterprises-table";
 
 export default async function AdminEmpresasPage() {
   const ctx = await requireRole("admin");
@@ -26,7 +16,9 @@ export default async function AdminEmpresasPage() {
   if (tenantId) {
     const res = await supabase
       .from("enterprise")
-      .select("id, name, sector, membership_tier, is_active")
+      .select(
+        "id, name, sector, rfc, membership_tier, hr_contact_name, hr_contact_email, hr_contact_phone",
+      )
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
     enterprises = (res.data as EnterpriseRow[] | null) ?? [];
@@ -52,34 +44,7 @@ export default async function AdminEmpresasPage() {
         </CardContent>
       </Card>
 
-      {enterprises.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-            <Building2 className="size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Aún no hay empresas registradas.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {enterprises.map((e) => (
-            <Card key={e.id}>
-              <CardContent className="flex items-center justify-between gap-4 py-3">
-                <div>
-                  <p className="font-medium">{e.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {e.sector ?? "—"}
-                  </p>
-                </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
-                  {e.membership_tier ?? "—"}
-                </span>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <EnterprisesTable rows={enterprises} />
     </div>
   );
 }

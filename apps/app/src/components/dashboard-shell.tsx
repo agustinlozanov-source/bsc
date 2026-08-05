@@ -1,15 +1,19 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@bsc/validators";
 import { getUserContext } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ROLE_DASHBOARD, ROLE_LABEL } from "@/lib/roles";
 import { Sidebar } from "@/components/sidebar";
-import { SignOutButton } from "@/components/sign-out-button";
+import { TopBar, type OtherRole } from "@/components/top-bar";
+import { GlobalSearch } from "@/components/global-search";
+
+const PROFILE_HREF: Partial<Record<UserRole, string>> = {
+  professional: "/professional/perfil",
+};
 
 /**
  * Shell de dashboard para un rol concreto: valida sesión + pertenencia al rol,
- * pinta el sidebar y la barra superior. Soporta usuarios multi-rol con un
- * selector "Ver como".
+ * pinta el sidebar y el top bar global.
  */
 export async function DashboardShell({
   role,
@@ -25,45 +29,40 @@ export async function DashboardShell({
   const roleLabel = ROLE_LABEL[role];
   const fullName = ctx.profile
     ? `${ctx.profile.first_name} ${ctx.profile.last_name}`.trim()
-    : ctx.user.email;
-  const isReadOnly =
-    ctx.roles.find((r) => r.role === role)?.is_read_only ?? false;
-  const otherRoles = [...new Set(ctx.roles.map((r) => r.role))].filter(
-    (r) => r !== role,
-  );
+    : (ctx.user.email ?? "");
+
+  const otherRoles: OtherRole[] = [
+    ...new Set(ctx.roles.map((r) => r.role)),
+  ]
+    .filter((r) => r !== role)
+    .map((r) => ({ role: r, label: ROLE_LABEL[r], href: ROLE_DASHBOARD[r] }));
+
+  const tenantId = ctx.roles.find((r) => r.role === role)?.tenant_id ?? null;
+  let tenantName: string | null = null;
+  if (tenantId) {
+    const supabase = createSupabaseServerClient();
+    const res = await supabase
+      .from("tenant")
+      .select("name")
+      .eq("id", tenantId)
+      .maybeSingle();
+    tenantName = (res.data as { name: string } | null)?.name ?? null;
+  }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar role={role} roleLabel={roleLabel} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between gap-4 border-b bg-card px-5">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{fullName}</span>
-            {isReadOnly ? (
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                Solo lectura (socio)
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-3">
-            {otherRoles.length > 0 ? (
-              <div className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
-                <span>Ver como:</span>
-                {otherRoles.map((r) => (
-                  <Link
-                    key={r}
-                    href={ROLE_DASHBOARD[r]}
-                    className="rounded px-2 py-1 font-medium text-foreground/80 hover:bg-muted"
-                  >
-                    {ROLE_LABEL[r]}
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-            <SignOutButton />
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+    <div className="flex min-h-screen flex-col">
+      <GlobalSearch primaryRole={role} />
+      <TopBar
+        fullName={fullName}
+        roleLabel={roleLabel}
+        email={ctx.user.email ?? ""}
+        tenantName={tenantName}
+        otherRoles={otherRoles}
+        profileHref={PROFILE_HREF[role]}
+      />
+      <div className="flex min-h-0 flex-1">
+        <Sidebar role={role} roleLabel={roleLabel} />
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

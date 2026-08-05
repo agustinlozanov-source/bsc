@@ -1356,6 +1356,71 @@ export type Database = {
           },
         ]
       }
+      objective_category: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      objective_update: {
+        Row: {
+          created_at: string | null
+          id: string
+          note: string | null
+          objective_id: string | null
+          progress_pct: number | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          note?: string | null
+          objective_id?: string | null
+          progress_pct?: number | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          note?: string | null
+          objective_id?: string | null
+          progress_pct?: number | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_update_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "user_objective"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_event_evaluation: {
         Row: {
           comments: string | null
@@ -2007,13 +2072,17 @@ export type Database = {
       }
       user_objective: {
         Row: {
+          achieved_at: string | null
+          achievement_note: string | null
           ai_followup_date: string | null
           ai_followup_response: string | null
           ai_followup_sent: boolean | null
+          category_id: string | null
           created_at: string | null
           enrollment_id: string | null
           id: string
           objective_text: string
+          progress_pct: number | null
           result_notes: string | null
           status: string | null
           target_date: string
@@ -2021,13 +2090,17 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          achieved_at?: string | null
+          achievement_note?: string | null
           ai_followup_date?: string | null
           ai_followup_response?: string | null
           ai_followup_sent?: boolean | null
+          category_id?: string | null
           created_at?: string | null
           enrollment_id?: string | null
           id?: string
           objective_text: string
+          progress_pct?: number | null
           result_notes?: string | null
           status?: string | null
           target_date: string
@@ -2035,13 +2108,17 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          achieved_at?: string | null
+          achievement_note?: string | null
           ai_followup_date?: string | null
           ai_followup_response?: string | null
           ai_followup_sent?: boolean | null
+          category_id?: string | null
           created_at?: string | null
           enrollment_id?: string | null
           id?: string
           objective_text?: string
+          progress_pct?: number | null
           result_notes?: string | null
           status?: string | null
           target_date?: string
@@ -2049,6 +2126,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_objective_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "objective_category"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_objective_enrollment_id_fkey"
             columns: ["enrollment_id"]
