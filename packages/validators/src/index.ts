@@ -156,6 +156,34 @@ export const createScheduleSchema = z.object({
 });
 export type CreateScheduleInput = z.infer<typeof createScheduleSchema>;
 
+export const enterpriseSizeSchema = z.enum([
+  "micro",
+  "small",
+  "medium",
+  "large",
+  "enterprise",
+]);
+export const enterpriseTierSchema = z.enum([
+  "starter",
+  "business",
+  "enterprise",
+]);
+
+export const createEnterpriseSchema = z.object({
+  name: z.string().min(2, "Nombre requerido"),
+  rfc: z.string().optional().or(z.literal("")),
+  sector: z.string().optional().or(z.literal("")),
+  size: enterpriseSizeSchema,
+  hrContactName: z.string().optional().or(z.literal("")),
+  hrContactEmail: z
+    .string()
+    .email("Correo inválido")
+    .optional()
+    .or(z.literal("")),
+  membershipTier: enterpriseTierSchema,
+});
+export type CreateEnterpriseInput = z.infer<typeof createEnterpriseSchema>;
+
 export const declareObjectiveSchema = z.object({
   enrollmentId: z.string().uuid("Selecciona un curso"),
   objectiveText: z.string().min(5, "Describe tu objetivo"),
