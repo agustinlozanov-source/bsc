@@ -156,6 +156,14 @@ export const createScheduleSchema = z.object({
 });
 export type CreateScheduleInput = z.infer<typeof createScheduleSchema>;
 
+/** RFC mexicano (12 = moral, 13 = física). */
+export const rfcRegex = /^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/i;
+export const rfcOptional = z
+  .string()
+  .regex(rfcRegex, "El RFC debe tener 12 o 13 caracteres válidos")
+  .optional()
+  .or(z.literal(""));
+
 export const enterpriseSizeSchema = z.enum([
   "micro",
   "small",
@@ -171,7 +179,7 @@ export const enterpriseTierSchema = z.enum([
 
 export const createEnterpriseSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
-  rfc: z.string().optional().or(z.literal("")),
+  rfc: rfcOptional,
   sector: z.string().optional().or(z.literal("")),
   size: enterpriseSizeSchema,
   hrContactName: z.string().optional().or(z.literal("")),
@@ -180,6 +188,7 @@ export const createEnterpriseSchema = z.object({
     .email("Correo inválido")
     .optional()
     .or(z.literal("")),
+  hrContactPhone: z.string().optional().or(z.literal("")),
   membershipTier: enterpriseTierSchema,
 });
 export type CreateEnterpriseInput = z.infer<typeof createEnterpriseSchema>;
