@@ -34,7 +34,7 @@ function CommandDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-1/2 top-[18%] z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border bg-popover shadow-lg">
+        <Dialog.Content className="fixed left-1/2 top-[18%] z-50 w-full max-w-xl -translate-x-1/2 overflow-hidden rounded-card border bg-popover shadow-lg">
           <Dialog.Title className="sr-only">Buscar</Dialog.Title>
           <Command shouldFilter={false}>{children}</Command>
         </Dialog.Content>

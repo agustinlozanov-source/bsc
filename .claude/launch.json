@@ -4,8 +4,22 @@
     {
       "name": "app",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@bsc/app", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "@bsc/app",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@bsc/web",
+        "dev"
+      ],
+      "port": 3001
     }
   ]
 }

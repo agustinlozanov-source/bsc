@@ -1,15 +1,13 @@
 # ─────────────────────────────────────────────────────────────
-# Netlify — sitio: app.bostonskillingcenter.com (apps/app)
+# Netlify — sistema operativo: app.bostonskillingcenter.com (apps/app)
 #
-# Monorepo pnpm + Turborepo. Este archivo configura el deploy del
-# SISTEMA OPERATIVO (apps/app). Cuando agreguemos apps/web y apps/verify,
-# cada uno será un SITIO Netlify aparte (mismo repo), con su propio
-# "base directory" configurado en el panel de Netlify.
+#   Package directory : apps/app
+#   Base directory    : (sin definir)
 #
-# Variables de entorno (definir en el panel de Netlify, NO aquí):
+# Variables de entorno: definirlas en el panel de Netlify, NUNCA aquí.
 #   NEXT_PUBLIC_SUPABASE_URL
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY
-#   SUPABASE_SERVICE_ROLE_KEY   (solo backend/edge; nunca NEXT_PUBLIC)
+#   SUPABASE_SERVICE_ROLE_KEY   (solo servidor; jamás con prefijo NEXT_PUBLIC)
 # ─────────────────────────────────────────────────────────────
 
 [build]
