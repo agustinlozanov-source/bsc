@@ -35,3 +35,7 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Skills de terceros instaladas con `npx ui-ux-pro-max-cli init --ai claude`.
+# Son ~4.5 MB regenerables con ese comando; no son código del proyecto.
+.claude/skills/

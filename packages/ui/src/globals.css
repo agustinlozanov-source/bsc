@@ -3,70 +3,122 @@
 @tailwind utilities;
 
 /*
- * Tokens de tema (shadcn/ui) con la marca BSC.
- * Primario = verde BSC #18490e (~ hsl(103 68% 17%)).
+ * Tokens de marca — Boston Skilling Center · Sistema de Diseño v1.0
+ *
+ * Dos capas:
+ *  1. `--bsc-*`  → valores literales de la guía (hex). Se usan en SVG, gradientes
+ *                  y cualquier lugar donde el token semántico no aplica.
+ *  2. shadcn/ui  → tokens semánticos en HSL derivados de los anteriores.
+ *
+ * Regla de proporción de la guía: 55% papel/blanco · 30% verdes · 10% neutros ·
+ * 5% acentos. El verde nunca es protagonista sobre el papel.
  */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 103 20% 12%;
+    /* --- Capa 1: paleta literal de la guía --- */
+    --bsc-verde-principal: #18490e;
+    --bsc-verde-medio: #2d6b1e;
+    --bsc-verde-claro: #6a9e5a;
+    --bsc-verde-velo: #e8f0e6;
+    --bsc-texto-1: #1a1a1a;
+    --bsc-texto-2: #4a4a4a;
+    --bsc-texto-3: #888888;
+    --bsc-linea: #e0e0e0;
+    --bsc-oro: #a67c33;
+    --bsc-oro-velo: #f1e5d0;
+    --bsc-ladrillo: #8c4a3a;
+    --bsc-ladrillo-velo: #efdcd6;
+    --bsc-papel: #fafaf8;
+    --bsc-blanco: #ffffff;
+
+    /* Retícula base de 8px (guía §Sistema de espaciado) */
+    --bsc-grid: 8px;
+
+    /* --- Capa 2: tokens semánticos shadcn --- */
+    --background: 60 20% 98%; /* papel #FAFAF8 */
+    --foreground: 0 0% 10%; /* texto-1 #1A1A1A */
 
     --card: 0 0% 100%;
-    --card-foreground: 103 20% 12%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 103 20% 12%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 103 68% 17%;
-    --primary-foreground: 90 40% 96%;
+    --primary: 110 68% 17%; /* verde principal #18490E */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 103 40% 27%;
-    --secondary-foreground: 90 40% 96%;
+    --secondary: 108 56% 27%; /* verde medio #2D6B1E */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 100 12% 94%;
-    --muted-foreground: 103 10% 40%;
+    --muted: 108 25% 92%; /* verde velo #E8F0E6 */
+    --muted-foreground: 0 0% 29%; /* texto-2 #4A4A4A */
 
-    --accent: 103 30% 48%;
-    --accent-foreground: 90 40% 96%;
+    --accent: 106 27% 49%; /* verde claro #6A9E5A */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 0 0% 98%;
+    /* Acento oro — certificaciones, logros, nivel intermedio */
+    --gold: 38 53% 43%; /* #A67C33 */
+    --gold-foreground: 0 0% 100%;
+    --gold-veil: 38 54% 88%; /* #F1E5D0 */
 
-    --border: 100 12% 88%;
-    --input: 100 12% 88%;
-    --ring: 103 68% 17%;
+    /* Acento ladrillo — avisos, cupo limitado, nivel avanzado */
+    --brick: 12 41% 39%; /* #8C4A3A */
+    --brick-foreground: 0 0% 100%;
+    --brick-veil: 14 44% 89%; /* #EFDCD6 */
 
-    --radius: 0.5rem;
+    /* Error reutiliza el ladrillo institucional, no un rojo genérico */
+    --destructive: 12 41% 39%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 88%; /* línea #E0E0E0 */
+    --input: 0 0% 88%;
+    --ring: 110 68% 17%;
+
+    /* Radio de 3px (guía §Interfaz). Tarjetas y bandas usan `rounded-card`. */
+    --radius: 0.1875rem;
   }
 
+  /*
+   * El sistema de diseño v1.0 no define modo oscuro; esta variante existe solo
+   * para la app interna (`apps/app`), que ya la ofrecía. El sitio público es
+   * light-only por decisión de marca.
+   */
   .dark {
-    --background: 103 25% 7%;
+    --background: 110 25% 7%;
     --foreground: 90 20% 92%;
 
-    --card: 103 22% 10%;
+    --card: 110 22% 10%;
     --card-foreground: 90 20% 92%;
 
-    --popover: 103 22% 10%;
+    --popover: 110 22% 10%;
     --popover-foreground: 90 20% 92%;
 
-    --primary: 103 45% 55%;
-    --primary-foreground: 103 30% 10%;
+    --primary: 106 40% 60%;
+    --primary-foreground: 110 30% 8%;
 
-    --secondary: 103 30% 22%;
+    --secondary: 108 30% 22%;
     --secondary-foreground: 90 20% 92%;
 
-    --muted: 103 15% 16%;
+    --muted: 110 15% 16%;
     --muted-foreground: 100 10% 62%;
 
-    --accent: 103 30% 30%;
+    --accent: 106 27% 35%;
     --accent-foreground: 90 20% 92%;
 
-    --destructive: 0 62% 45%;
+    --gold: 38 45% 58%;
+    --gold-foreground: 110 30% 8%;
+    --gold-veil: 38 20% 20%;
+
+    --brick: 12 40% 55%;
+    --brick-foreground: 110 30% 8%;
+    --brick-veil: 12 20% 20%;
+
+    --destructive: 12 40% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 103 15% 20%;
-    --input: 103 15% 20%;
-    --ring: 103 45% 55%;
+    --border: 110 15% 20%;
+    --input: 110 15% 20%;
+    --ring: 106 40% 60%;
   }
 }
 
@@ -76,5 +128,37 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * Elms Sans es la única familia del sistema: la jerarquía se construye con
+   * pesos (300/400/600/700/900), nunca con una segunda familia (guía §03).
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-sans tracking-tight;
+  }
+}
+
+@layer utilities {
+  /*
+   * Motivo gráfico: el skyline se ancla a una esquina y nunca al centro,
+   * recortado al 12–18% de opacidad (guía §05).
+   */
+  .bsc-motivo {
+    @apply pointer-events-none absolute select-none;
+    opacity: 0.16;
+  }
+
+  /* Respeta prefers-reduced-motion sin tener que repetir el media query. */
+  @media (prefers-reduced-motion: reduce) {
+    .bsc-motion-safe {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }

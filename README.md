@@ -9,7 +9,7 @@ agentes de IA y motor de credenciales Open Badges 3.0.
 | App | Dominio | Descripción | Estado |
 |-----|---------|-------------|--------|
 | `apps/app` | app.bostonskillingcenter.com | Sistema operativo (5 perfiles) | 🚧 En construcción |
-| `apps/web` | bostonskillingcenter.com | Sitio público / marketing | ⏳ Pendiente |
+| `apps/web` | bostonskillingcenter.com | Sitio público / marketing | 🚧 Home + Nosotros |
 | `apps/verify` | verify.bostonskillingcenter.com | Verificador de credenciales | ⏳ Pendiente |
 
 ### Packages compartidos
@@ -41,7 +41,10 @@ pnpm dev
 ## Marca
 
 - Primario `#18490e` · Secundario `#2d6b1e` · Terciario `#6a9e5a`
-- Fuente: Inter
+- Acentos: oro `#a67c33` · ladrillo `#8c4a3a` (máx. 5% de cualquier composición)
+- Fuente: Elms Sans (auto-hospedada en `packages/ui/fonts`)
+- Radio 3px · retícula de 8px
+- Fuente de verdad: Sistema de Diseño BSC v1.0
 - Primera sucursal: Reynosa, Tamaulipas
 
 ---

@@ -1,0 +1,21 @@
+# ─────────────────────────────────────────────────────────────
+# Netlify — sitio público: bostonskillingcenter.com (apps/web)
+#
+# En el panel de Netlify, este sitio se configura así:
+#   Package directory : apps/web      ← donde vive este archivo
+#   Base directory    : (sin definir) ← la raíz, donde corre pnpm
+#
+# Netlify busca el netlify.toml primero en el package directory, pero
+# ejecuta el build desde el base directory. Por eso el comando usa
+# `--filter` desde la raíz y las rutas se escriben desde la raíz.
+# ─────────────────────────────────────────────────────────────
+
+[build]
+  command = "pnpm --filter @bsc/web build"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
